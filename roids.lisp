@@ -7,9 +7,14 @@
 (defvar *width* 640)
 (defvar *height* 480)
 
-(setf *player*
+(defvar *player*
   (make-instance 'ship
 		 :pos (vector (/ *width* 2) (/ *height* 2))))
+(progn
+  (setf *world* nil)
+  (setf *player*
+  (make-instance 'ship
+		 :pos (vector (/ *width* 2) (/ *height* 2)))))
 
 (defun game-loop ()
   (sdl:with-init ()
@@ -35,6 +40,7 @@
 
   (mapcar (lambda (x) (wrap x *width* *height*)) *world*)
   (mapcar #'move *world*)
+  (do-collisions)
   (mapcar #'draw *world*))
 
 (defun key-down (key)

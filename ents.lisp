@@ -25,6 +25,10 @@
 (defgeneric destroy (entity))
 (defgeneric collide (entity entity))
 
+(defmethod collide ((ent0 entity) (ent1 entity))
+  ;; do nothing, but an isomorph should be there hopefully
+  '())
+
 (defmethod wrap ((entity entity) width height)
   (with-slots (pos) entity
     (let ((x (aref pos 0))
@@ -42,7 +46,7 @@
 ;;; Ship definition
 
 (defclass ship (entity)
-  ((quote :initform nil)))
+  ((radius :initform 7.5 :initarg :radius :accessor radius)))
 
 (defmethod draw ((ship ship))
   (with-slots (pos fac) ship
@@ -79,7 +83,7 @@
     (make-instance 'bullet :vel (polar 9 fac) :pos pos)))
 
 (defmethod destroy ((ship ship))
-  )
+  ())
 
 ;;; Bullet class
 
@@ -113,14 +117,15 @@
 
 (defmethod initialize-instance :after ((asteroid asteroid) &rest initargs)
   (declare (ignore initargs))
-  (with-slots (radius rel-verts) asteroid
-    (setf rel-verts (gen-asteroid-verts radius))))
+  (with-slots (radius rel-verts vel) asteroid
+    (setf rel-verts (gen-asteroid-verts radius))
+    (setf vel (polar (/ 30 radius) (* pi (/ (random 8) 4))))))
 
 (defun gen-asteroid-verts (radius)
   (let ((points 8))
     (loop :for i :from 0 :upto (1- points)
        :collect (polar (+/- radius
-			    (random (half radius)))
+			    (random (round (half radius))))
 		       (* pi (/ i (half points))))
        :into verts
        :finally (return (append (last verts) verts)))))
@@ -133,6 +138,31 @@
       (maplist (lambda (x) (when (> (length x) 1)
 			     (sdl:draw-line (car x) (cadr x))))
 	       abs-verts))))
+
+(defmethod destroy ((asteroid asteroid))
+  (with-slots (radius pos) asteroid
+    (cond ((> radius 5)
+	   (dotimes (i 2)
+	     (make-instance 'asteroid
+			    :radius (- radius 5)
+			    :pos pos)))
+	  (t
+	   '()))))
+
+;;; Collisions methods
+;;; because of how do-collisions is written isomorphic methods
+;;; aren't needed. i think.
+
+(defmethod collide ((asteroid asteroid) (ship ship))
+  (when (< (sdl:distance (pos asteroid) (pos ship))
+	   (+ (radius ship) (radius asteroid)))
+    (destroy ship)))
+
+(defmethod collide ((asteroid asteroid) (bullet bullet))
+  (when (< (sdl:distance (pos asteroid) (pos bullet))
+	   (radius asteroid))
+    (destroy bullet)
+    (destroy asteroid)))
 
 (make-instance 'asteroid :pos (vector (random *width*) (random *height*)))
 (setf *world* '())
@@ -166,4 +196,8 @@
   (/ n 2))
 
 (defun do-collisions ()
-  )
+  (mapcar (lambda (x)
+	    (mapcar (lambda (y)
+		      (collide x y))
+		    (remove x *world*)))
+	  *world*))
