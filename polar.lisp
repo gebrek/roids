@@ -1,10 +1,10 @@
 (in-package :roids)
 
 (defclass polar ()
-  ((r :initarg :r :initform 0)
-   (theta :initarg :theta :initform 0)))
+  ((r :initarg :r :initform 0 :reader r)
+   (theta :initarg :theta :initform 0 :reader theta)))
 
-(defun polar (r theta)
+(defun polar (&optional (r 0) (theta 0))
   (make-instance 'polar :r r :theta theta))
 
 (defmethod add ((p1 polar) (p2 polar))
