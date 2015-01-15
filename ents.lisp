@@ -2,10 +2,17 @@
 
 (in-package #:roids)
 
-(defclass ship ()
+;;; Entity abstract
+
+(defclass entity ()
   ((pos :initform #(0 0) :initarg :pos :accessor pos)
    (fac :initform 0 :initarg :fac :accessor fac)
    (vel :initform (polar) :initarg :vel :accessor vel)))
+
+;;; Ship definition
+
+(defclass ship (entity)
+  ((quote :initform nil)))
 
 (defmethod draw ((ship ship))
   (with-slots (pos fac) ship
