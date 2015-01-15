@@ -22,7 +22,7 @@
 	     (sdl:update-display)))))
 
 (defun events ()
-  (draw-ship *player*)
+  (draw *player*)
   (when (sdl:key-held-p :sdl-key-d)
     (incf (fac *player*) 0.05))
   (when (sdl:key-held-p :sdl-key-a)
