@@ -10,11 +10,17 @@
 (defvar *player*
   (make-instance 'ship
 		 :pos (vector (/ *width* 2) (/ *height* 2))))
-(progn
+
+(defvar *lives* 3)
+
+(defun start-game ()
   (setf *world* nil)
-  (setf *player*
-  (make-instance 'ship
-		 :pos (vector (/ *width* 2) (/ *height* 2)))))
+  (setf *lives* 3)
+  (setf *player* (make-instance 'ship
+				:pos (vector (half *width*) (half *height*))))
+  (dotimes (i 8)
+    (make-instance 'asteroid :pos (vector (/ i 7) 0)))
+  (game-loop))
 
 (defun game-loop ()
   (sdl:with-init ()

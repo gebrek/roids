@@ -83,7 +83,10 @@
     (make-instance 'bullet :vel (polar 9 fac) :pos pos)))
 
 (defmethod destroy ((ship ship))
-  ())
+  (decf *lives*)
+  (setf *world* (remove ship *world*))
+  (setf *player*(make-instance 'ship
+		       :pos (vector (/ *width* 2) (/ *height* 2)))))
 
 ;;; Bullet class
 
@@ -119,7 +122,7 @@
   (declare (ignore initargs))
   (with-slots (radius rel-verts vel) asteroid
     (setf rel-verts (gen-asteroid-verts radius))
-    (setf vel (polar (/ 30 radius) (* pi (/ (random 8) 4))))))
+    (setf vel (polar (/ 30 radius) (* pi (/ (random 32) 16))))))
 
 (defun gen-asteroid-verts (radius)
   (let ((points 8))
@@ -140,6 +143,7 @@
 	       abs-verts))))
 
 (defmethod destroy ((asteroid asteroid))
+  (setf *world* (remove asteroid *world*))
   (with-slots (radius pos) asteroid
     (cond ((> radius 5)
 	   (dotimes (i 2)
